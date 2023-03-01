@@ -36,22 +36,34 @@ router.get("/genre/:genre", async function(request, response) {
     }
 })
 
-router.put("/userId/:userId", async function(request, response) {
+router.put("/userId/:userId", [check("rating").trim().not().isEmpty().withMessage("Rating cannot be empty!")], async function(request, response) {
     try{
+        const errors = validationResult(request)
         const show = await Show.findOne({where: {userId: request.params.userId}})
-        await show.update({rating: request.body.rating})
-        response.status(200).send(show)
+        if(!errors.isEmpty()){
+            response.status(400).send(errors)
+        }
+        else{
+            await show.update({rating: request.body.rating})
+            response.status(200).send(show)
+        }
     }
     catch(error){
         response.status(500).send({error: error.message})
     }
 })
 
-router.put("/:id", async function(request, response) {
+router.put("/:id", [check("status").trim().isLength({min: 5, max: 25}).withMessage("Status character length must be between 5 and 25")], async function(request, response) {
     try{
+        const errors = validationResult(request)
         const show = await Show.findByPk(request.params.id)
-        show.update({status: request.body.status})
-        response.status(200).send(show)
+        if(!errors.isEmpty()){
+            response.status(400).send(errors)
+        }
+        else{
+            await show.update({status: request.body.status})
+            response.status(200).send(show)
+        }
     }
     catch(error){
         response.status(500).send({error: error.message})
