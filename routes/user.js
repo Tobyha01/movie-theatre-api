@@ -26,21 +26,24 @@ router.get("/:id", async function(request, response) {
     }
 })
 
-router.get("/shows/:id", async function(request, response) {
+router.get("/:id/shows", async function(request, response) {
     try{
-        const userShow = await Show.findAll({where: {userId: request.params.id}})
-        response.status(200).send(userShow)
+        const user = await User.findByPk(request.params.id)
+        const userShows = await user.getShows()
+        response.status(200).send(userShows)
     }
     catch(error){
         response.status(500).send({error: error.message})
     }
 })
 
-router.put("/:id", async function(request, response) {
+router.put("/:id/shows/:showid", async function(request, response) {
     try{
         const user = await User.findByPk(request.params.id)
-        user.addShows([1, 5, 9])   
-        response.status(200).send(user)
+        const show = await Show.findByPk(request.params.showid)
+        await user.addShows(show)
+        await show.update({userId: request.params.id})   
+        response.status(200).send(show)
     }
     catch(error){
         response.status(500).send({error: error.message})
